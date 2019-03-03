@@ -6,8 +6,10 @@ import styles from './cardInfo.css'
 const CardInfo = (props) =>{
 
     const teamName = (teams,team) =>{
+       
         let data = teams.find((item)=>{
-            return item.id === team
+            console.log(item );
+            return item.teamId === team
         });
         if(data){
             return data.name
