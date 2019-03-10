@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { firebaseDB, firebaseLooper, firebaseTeams, firebase } from '../../../../firebase';
+import { firebase, firebaseDB , firebaseLooper, firebaseTeams } from '../../../../firebase';
+
 import styles from '../../articles.css';
 import Header from './header';
 
@@ -15,9 +16,9 @@ class NewsArticles extends Component {
         firebaseDB.ref(`articles/${this.props.match.params.id}`).once('value')
         .then((snapshot)=>{
             let article = snapshot.val();
-            
-            firebaseTeams.orderByChild('id').equalTo(article.team).once('value')
-            .then( (snapshot) => {
+
+            firebaseTeams.orderByChild("teamId").equalTo(article.team).once('value')
+            .then((snapshot)=>{
                 const team = firebaseLooper(snapshot);
                 this.setState({
                     article,
@@ -26,8 +27,6 @@ class NewsArticles extends Component {
                 this.getImageURL(article.image)
             })
         })
-       
-
         // axios.get(`${URL}/articles?id=${this.props.match.params.id}`)
         // .then( response => {
         //     let article = response.data[0];
@@ -42,7 +41,8 @@ class NewsArticles extends Component {
         // })
     }
 
-    getImageURL = (filename) => {
+    getImageURL = (filename) =>{
+
         firebase.storage().ref('images')
         .child(filename).getDownloadURL()
         .then( url => {
@@ -50,7 +50,10 @@ class NewsArticles extends Component {
                 imageURL: url
             })
         })
+
     }
+
+
 
     render(){
         const article = this.state.article;
@@ -72,9 +75,10 @@ class NewsArticles extends Component {
                     ></div>
                     <div className={styles.articleText}
                         dangerouslySetInnerHTML={{
-                            __html: article.body
+                            __html:article.body
                         }}
                     >
+                 
                     </div>
                 </div>
             </div>
