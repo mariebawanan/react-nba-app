@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styles from './dashboard.css';
-import { firebaseTeams } from '../../firebase';
+import { firebase,  firebaseTeams, firebaseArticles } from '../../firebase';
 
 import FormField from '../widgets/formfields/formfields';
 
@@ -51,11 +51,11 @@ class Dashboard extends Component {
                 value:'',
                 valid: true
             },
-            teams: {
+            team: {
                 element: 'select',
                 value: '',
                 config: {
-                    name: 'teams_input',
+                    name: 'team_input',
                     options: []
                 },
                 validation: {
@@ -74,26 +74,26 @@ class Dashboard extends Component {
     }
 
     componentDidMount(){
-        this.loadTeams()
+        this.loadteam()
     }
 
-    loadTeams = () => {
+    loadteam = () => {
         firebaseTeams.once('value')
         .then((snapshot) => {
-            let teams =  [];
+            let team =  [];
             snapshot.forEach((childSnapshot) => {
-                teams.push({
+                team.push({
                     id: childSnapshot.val().teamId,
                     name: childSnapshot.val().city
                 })
             })
 
             const newFormData = { ...this.state.formData}
-            const newElement = {...newFormData['teams']}
+            const newElement = {...newFormData['team']}
 
-            newElement.config.options = teams;
+            newElement.config.options = team;
 
-            newFormData['teams'] = newElement;
+            newFormData['team'] = newElement;
 
             this.setState({
                 formData: newFormData
@@ -159,7 +159,31 @@ class Dashboard extends Component {
         }
 
         if(formIsValid) {
-            console.log('sibmit');
+            this.setState({
+                loading: true,
+                postError:''
+            })
+
+            firebaseArticles.orderByChild("id")
+            .limitToLast(1).once('value')
+            .then( snapshot => {
+                let articleId = null;
+                snapshot.forEach(childSnapshot => {
+                    articleId = childSnapshot.val().id;
+                })
+                dataToSubmit['date'] = firebase.database.ServerValue.TIMESTAMP;
+                dataToSubmit['id'] = articleId + 1;
+                dataToSubmit['team'] = parseInt(dataToSubmit['team'])
+
+                firebaseArticles.push(dataToSubmit)
+                .then( article => {
+                    this.props.history.push(`/articles/${article.key}`)
+                }).catch( e => {
+                    this.setState({
+                        postError: e.message
+                    })
+                })
+            })
         }
         else {
             this.setState({
@@ -232,8 +256,8 @@ class Dashboard extends Component {
                     />
 
                     <FormField
-                            id={'teams'}
-                            formData={this.state.formData.teams}
+                            id={'team'}
+                            formData={this.state.formData.team}
                             change={(element)=>this.updateForm(element)}
                         />
                     
